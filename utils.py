@@ -6,23 +6,23 @@ import matplotlib.pyplot as plt
 import matplotlib
 import cartopy
 
-def plotter(da, cmap, title, vmin, vmax, k, mask_out_ocean=True, location=None, cbar_ylabel=None):
+
+def plotter(
+    da, cmap, title, vmin, vmax, k, 
+    mask_out_ocean=True, location=None, cbar_ylabel=None):
     """
     inputs
     ------
-    
         da          (xr.DataArray) : the data array containing the field to plot
-        
-    returns
+    output
     -------
         None but shows the plot via plt.show
     """
-
     plt.figure(figsize=(21,14))
     ax = plt.axes(projection=ccrs.Miller(central_longitude=180))
     if mask_out_ocean:
         import xesmf as xe
-        ds_in = xr.open_dataset("lsmask.oisst.v2.nc")
+        ds_in = xr.open_dataset("./data/lsmask.oisst.v2.nc")
         regridder = xe.Regridder(ds_in, da, 'nearest_s2d', reuse_weights=True)
         ds_in = regridder(ds_in).squeeze()
         da.values[ds_in['lsmask'] == 1] = np.nan
@@ -34,15 +34,19 @@ def plotter(da, cmap, title, vmin, vmax, k, mask_out_ocean=True, location=None, 
         da_min = da_min.where(da_min!=da_min.min(), drop=True).squeeze()
     top_k=[(p.lon.item(), p.lat.item()) for p in points]
 
-    contours = da.plot.contourf(ax=ax, transform=ccrs.PlateCarree(), cmap=cmap, vmin=vmin, vmax=vmax, extend='both')
+    contours = da.plot.contourf(ax=ax, transform=ccrs.PlateCarree(),
+        cmap=cmap, vmin=vmin, vmax=vmax, extend='both')
 
     if cbar_ylabel:
         contours.colorbar.ax.set_ylabel(cbar_ylabel)
     plt.title(title, size=25)
     ax.set_global(); ax.coastlines(); ax.add_feature(cartopy.feature.STATES)
     if top_k:  
-        ax.scatter([a[0] for a in top_k],[a[1] for a in top_k], transform=ccrs.PlateCarree(), color='purple', s=100, label = "Top-{} Analogs".format(k))
-    ax.scatter(*location, transform=ccrs.PlateCarree(), color='blue', s=100, label="Location") 
+        ax.scatter([a[0] for a in top_k],[a[1] for a in top_k],
+        transform=ccrs.PlateCarree(), color='purple',
+        s=100, label = "Top-{} Analogs".format(k))
+    ax.scatter(*(location), transform=ccrs.PlateCarree(),
+        color='blue', s=100, label="Location")
     ax.legend()
     plt.show()
     return (top_k)
