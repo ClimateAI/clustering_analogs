@@ -10,9 +10,7 @@ RUN python -c "import flask"
 # Change server timezone
 RUN cp /usr/share/zoneinfo/America/Los_Angeles /etc/localtime
 # Create directories
-RUN mkdir soilGrib
 RUN mkdir temp
-RUN mkdir data
 # Install curl for downloading scriptsudo apt-get install libeccodes0
 RUN apt-get update && apt-get -y install curl
 # Install eccodes for xarray library

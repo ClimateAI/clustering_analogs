@@ -10,8 +10,8 @@ app = Flask(__name__)
 #lat, lon = 20.194824, -100.9225607
 @app.route('/')
 def analogs_api():
-    lat = float(request.args.get('lat'))
-    lon = float(request.args.get('lon'))
+    lat = round(float(request.args.get('lat')),2)
+    lon = round(float(request.args.get('lon')),2)
     k = int(request.args.get('k', None))
     quan = float(request.args.get('quan', None))
     return str(get_analogs(lat, lon, k, quan))

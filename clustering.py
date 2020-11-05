@@ -18,53 +18,37 @@ def check_params(lat, lon):
     return None
 
 
-def load_file(lat, lon):
-    today = str(date.today())
-    os.makedirs(data_dir, exist_ok=True)
-    file_name = f'{lat},{lon}-{today}-{var}-Meteoblue.txt'
-    fn = f'{data_dir}/{file_name}'
-    blob_path = f'Data/Models/Meteoblue/raw/{var}/{today}/{file_name}'
-
-    print(f'Try to download from Google Storage. Save as: {fn}')
-    is_downloaded = download_from_storage(file_name, blob_path, data_dir)
-    
-    if is_downloaded:
-        with open(fn, 'r') as json_file:
-            data = json.load(json_file)
-            return 
-
-
 def get_analogs(lat, lon, k=5, quan=0.9):
     problem = check_params(lat, lon)
     if problem:
         return problem
 
-    url = "/home/jhexr/code/clustering_analogs/data/aws-cesm1-le.json"
-    if not os.path.isfile(url):
-        url = "https://ncar-cesm-lens.s3-us-west-2.amazonaws.com/\
-            catalogs/aws-cesm1-le.json"
-        lens_dataset = load_LENS_dataset(url)
-        lens_dataset.to_netcdf("./data/Lens_dataset.nc")
-    else:
-        lens_dataset = xr.open_dataset('./data/Lens_dataset.nc')
-
-    nc_file = './data/gto_cesm.nc'
+    nc_file = f'./temp/{lat},{lon}_cesm.nc'
+    print(nc_file)
     if not os.path.isfile(nc_file):
+        url = "./temp/aws-cesm1-le.json"
+        if not os.path.isfile(url):
+            url = "https://ncar-cesm-lens.s3-us-west-2.amazonaws.com/\
+                catalogs/aws-cesm1-le.json"
+            lens_dataset = load_LENS_dataset(url)
+            lens_dataset.to_netcdf("./temp/Lens_dataset.nc")
+        else:
+            lens_dataset = xr.open_dataset('./temp/Lens_dataset.nc')
         curr_analogs = calculate_analogs(
             lens_dataset, lat, lon,
             ['TREFHT', 'PRECC'], lens_dataset,
             '2000-01-01', '2009-12-31',
             '2000-01-01', '2009-12-31')
         curr_analogs = curr_analogs.load()
-        curr_analogs.to_netcdf('./data/gto_cesm.nc')
+        curr_analogs.to_netcdf(nc_file)
     else:
-        curr_analogs = xr.load_dataset('./data/gto_cesm.nc')
+        curr_analogs = xr.load_dataset(nc_file)
 
     curr_distances = curr_analogs['Standardized Euclidean Distance'].mean(
         dim='member_id')
     da = curr_distances
 
-    ds_in = xr.open_dataset("./data/lsmask.oisst.v2.nc")
+    ds_in = xr.open_dataset("./temp/lsmask.oisst.v2.nc")
     regridder = xe.Regridder(ds_in, da, 'nearest_s2d', reuse_weights=True)
     ds_in = regridder(ds_in).squeeze()
     da.values[ds_in['lsmask'] == 1] = np.nan
