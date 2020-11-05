@@ -18,6 +18,22 @@ def check_params(lat, lon):
     return None
 
 
+def load_file(lat, lon):
+    today = str(date.today())
+    os.makedirs(data_dir, exist_ok=True)
+    file_name = f'{lat},{lon}-{today}-{var}-Meteoblue.txt'
+    fn = f'{data_dir}/{file_name}'
+    blob_path = f'Data/Models/Meteoblue/raw/{var}/{today}/{file_name}'
+
+    print(f'Try to download from Google Storage. Save as: {fn}')
+    is_downloaded = download_from_storage(file_name, blob_path, data_dir)
+    
+    if is_downloaded:
+        with open(fn, 'r') as json_file:
+            data = json.load(json_file)
+            return 
+
+
 def get_analogs(lat, lon, k=5, quan=0.9):
     problem = check_params(lat, lon)
     if problem:
