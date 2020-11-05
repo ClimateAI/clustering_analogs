@@ -10,7 +10,19 @@ from sklearn.cluster import KMeans
 from analogs import calculate_analogs, load_LENS_dataset, print_analog_stats
 
 
-def get_analogs(lat, lon, k, quan=0.9):
+def check_params(lat, lon):
+    if lat > 90 or lat < -90:
+        return (f'Lat provided:{lat} is out of -90 to 90 bounds')
+    if lon > 180 or lon < -180:
+        return (f'Lon provided:{lon} is out of -180 to 180 bounds')
+    return None
+
+
+def get_analogs(lat, lon, k=5, quan=0.9):
+    problem = check_params(lat, lon)
+    if problem:
+        return problem
+
     url = "/home/jhexr/code/clustering_analogs/data/aws-cesm1-le.json"
     if not os.path.isfile(url):
         url = "https://ncar-cesm-lens.s3-us-west-2.amazonaws.com/\
