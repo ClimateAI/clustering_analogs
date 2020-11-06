@@ -7,8 +7,6 @@ import xesmf as xe
 from sklearn import preprocessing
 from sklearn.cluster import KMeans
 
-from analogs import calculate_analogs, load_LENS_dataset
-
 
 def check_params(lat, lon):
     if lat > 90 or lat < -90:
@@ -26,21 +24,7 @@ def get_analogs(lat, lon, k=5, quan=0.9):
     nc_file = f'./temp/{lat},{lon}_cesm.nc'
     print(nc_file)
     if not os.path.isfile(nc_file):
-        url = "./temp/aws-cesm1-le.json"
-        if not os.path.isfile(url):
-            url = "https://ncar-cesm-lens.s3-us-west-2.amazonaws.com/\
-                catalogs/aws-cesm1-le.json"
-            lens_dataset = load_LENS_dataset(url)
-            lens_dataset.to_netcdf("./temp/Lens_dataset.nc")
-        else:
-            lens_dataset = xr.open_dataset('./temp/Lens_dataset.nc')
-        curr_analogs = calculate_analogs(
-            lens_dataset, lat, lon,
-            ['TREFHT', 'PRECC'], lens_dataset,
-            '2000-01-01', '2009-12-31',
-            '2000-01-01', '2009-12-31')
-        curr_analogs = curr_analogs.load()
-        curr_analogs.to_netcdf(nc_file)
+        return "Not available"
     else:
         curr_analogs = xr.load_dataset(nc_file)
 

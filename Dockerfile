@@ -1,14 +1,15 @@
 FROM continuumio/miniconda3
 ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update -y && apt-get install dialog apt-utils -y
+# Copy local code to the container image.
+ENV APP_HOME /app
+WORKDIR $APP_HOME
+COPY . ./
 RUN conda create --name niche python=3.8
-ADD environment.yml /tmp/environment.yml
 SHELL ["conda", "run", "-n", "niche", "/bin/bash", "-c"]
-RUN apt-get update && apt-get install dialog python3-dev -y
-RUN conda env update --file /tmp/environment.yml
-RUN pip install flask xarray numpy xesmf pandas intake-esm
+# Activate the environment, and make sure it's activated:
+RUN pip install -r requirements.txt
+RUN conda install -c conda-forge xesmf -y
 RUN conda list
-COPY . /
 # Make sure the env is activated:
 RUN echo "Make sure flask is installed:"
 RUN python -c "import flask"
