@@ -7,7 +7,7 @@ import xesmf as xe
 from sklearn import preprocessing
 from sklearn.cluster import KMeans
 
-from analogs import calculate_analogs, load_LENS_dataset, print_analog_stats
+from analogs import calculate_analogs, load_LENS_dataset
 
 
 def check_params(lat, lon):

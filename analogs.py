@@ -4,12 +4,8 @@ import xarray as xr
 import os
 # from mpl_toolkits.basemap import Basemap
 import xesmf as xe
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-from glob import glob
 from utils import reformat_X
 import intake
-mpl.rcParams.update({'font.size' : 22})
 
 
 def load_LENS_dataset(catalog_url):
@@ -81,54 +77,3 @@ def calculate_analogs(
     sed.drop(var_list)
     
     return sed
-
-def plot_analog_validation(top_K_coords, lat, lon, var, long_name, start, end):
-    plt.figure(figsize=(21,14))
-    if var == "t2m":
-        ds = xr.open_dataset('regridded_ERA5_T2M.nc').sel(
-            expver=1,time=slice(start, end))-273.15
-    else:
-        ds = xr.open_dataset('precip.mon.total.1x1.v2018.nc').sel(
-            time=slice(start, end))
-    location = ds[var].sel(lat=lat, lon=lon, method='nearest').resample(
-        time="AS").mean("time")
-    location = pd.Series(location,index=location.time.values)
-    location.plot(label="Location")
-    for i, coord in enumerate(top_K_coords):
-        coord = ds[var].sel(lat=coord[1], lon=coord[0], method='nearest').resample(
-            time="AS").mean("time")
-        coord = pd.Series(coord,index=coord.time.values)
-        coord.plot(label="Closest Analog {}".format(i+1))
-    plt.xlabel("Date", size = 35)
-    plt.ylabel(long_name, size = 35)
-    plt.legend(loc='best', prop={'size': 20})
-    plt.show()
-
-def plot_analog(LENS_dataset, top_K_coords, lat, lon, var, long_name, start, end):
-    plt.figure(figsize=(21,14))
-    if var == "t2m":
-        ds = LENS_dataset.sel(time=slice(start, end)).mean('member_id')['TREFHT']-273.15
-    else:
-        ds = LENS_dataset.sel(time=slice(start, end)).mean('member_id')['PRECC']
-    location = ds.sel(lat=lat, lon=lon, method='nearest')
-    timeframe = [a.year for a in location.time.values]
-    location = pd.Series(location,index=timeframe)
-    location.plot(label="Location")
-    for i, coord in enumerate(top_K_coords):
-        coord = ds.sel(lat=coord[1], lon=coord[0], method='nearest')
-        coord = pd.Series(coord,index=timeframe)
-        coord.plot(label="Closest Analog {}".format(i+1))
-    plt.xlabel("Date", size = 35)
-    plt.ylabel(long_name, size = 35)
-    plt.legend(loc='best', prop={'size': 20})
-    plt.show()
-
-def print_analog_stats(bc_hist_models, long_name):
-    """
-    Print mean, std, min, and max of yearly averages across models
-    """
-    analog_stack = reformat_X(bc_hist_models, long_name, 'BC Climate Projection')
-    print("Mean of Yearly Average across Models {}".format(analog_stack.mean(axis=1).mean()))
-    print("STD of Yearly Average across Models {}".format(analog_stack.std(axis=1).mean()))
-    print("Maximum of Yearly Average across Models {}".format(analog_stack.max(axis=1).mean()))
-    print("Minimum of Yearly Average across Models: {}".format(analog_stack.min(axis=1).mean()))

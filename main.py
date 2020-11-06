@@ -6,7 +6,7 @@ from flask import request
 from clustering import get_analogs
 
 app = Flask(__name__)
-
+# /?lat=-32.2801&lon=146.0455&k=6&quan=0.9
 #lat, lon = 20.194824, -100.9225607
 @app.route('/')
 def analogs_api():
