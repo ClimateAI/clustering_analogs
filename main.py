@@ -8,6 +8,7 @@ from clustering import get_analogs
 app = Flask(__name__)
 # https://analog-api-qh2dnfh7wa-uc.a.run.app/?lat=20.194824&lon=-100.9225607&k=6&quan=0.9
 #lat, lon = 20.194824, -100.9225607
+# https://analog-api-qh2dnfh7wa-uc.a.run.app/?lat=33.11&lon=35.47&k=6&quan=0.9
 @app.route('/')
 def analogs_api():
     lat = round(float(request.args.get('lat')),2)
